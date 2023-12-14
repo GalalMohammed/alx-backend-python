@@ -13,7 +13,7 @@ Example:
 
 import random
 import asyncio
-from collections.abc import Iterator
+from typing import Iterator
 
 
 async def async_generator() -> Iterator[float]:
