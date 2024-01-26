@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This module defines TestAccessNestedMap class.
+This module defines unit test classes for utils.
 """
 
 import unittest
