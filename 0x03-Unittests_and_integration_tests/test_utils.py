@@ -5,12 +5,14 @@ This module defines TestAccessNestedMap class.
 """
 
 import unittest
+from unittest.mock import Mock, patch
 from parameterized import parameterized
-from utils import access_nested_map
+import requests
+from utils import access_nested_map, get_json
 
 
 class TestAccessNestedMap(unittest.TestCase):
-    """Unit test for utils.
+    """Unit test for access_nested_map.
     """
 
     @parameterized.expand([
@@ -35,6 +37,24 @@ class TestAccessNestedMap(unittest.TestCase):
         with self.assertRaises(KeyError) as cm:
             access_nested_map(nested_map, path)
         self.assertEqual(f"KeyError('{key}')", repr(cm.exception))
+
+
+class TestGetJson(unittest.TestCase):
+    """Unit Test for get_json.
+    """
+
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False})
+    ])
+    def test_get_json(self, test_url: str, test_payload: dict) -> None:
+        """Test get_json.
+        """
+        get = Mock()
+        get.json = Mock(return_value = test_payload)
+        with patch.object(requests, 'get', return_value=get) as mock_method:
+            self.assertEqual(get_json(test_url), test_payload)
+        mock_method.assert_called_once_with(test_url)
 
 
 if __name__ == "__main__":
