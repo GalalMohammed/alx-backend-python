@@ -29,13 +29,27 @@ class TestGithubOrgClient(unittest.TestCase):
 
     @patch('client.GithubOrgClient.org', new_callable=PropertyMock,
            return_value={
-                'repos_url': "https://api.github.com/orgs/example_org/repos"})
-    def test_public_repos_url(self, _: MagicMock) -> None:
+               'repos_url': "https://api.github.com/orgs/example/repos"})
+    def test_public_repos_url(self, mock_method: MagicMock) -> None:
         """Test _public_repos_url.
         """
         client = GithubOrgClient("example")
         self.assertEqual(client._public_repos_url,
-                         "https://api.github.com/orgs/example_org/repos")
+                         mock_method.return_value['repos_url'])
+
+    @patch('client.get_json', return_value=[{'name': 'repo1'},
+                                            {'name': 'repo2'}])
+    def test_public_repos(self, mock_get_json: MagicMock) -> None:
+        """Test public_repos.
+        """
+        with patch('client.GithubOrgClient._public_repos_url',
+                   new_callable=PropertyMock,
+                   return_value="https://api.github.com/orgs/example/repos")\
+             as mock_url:
+            client = GithubOrgClient("example")
+            self.assertEqual(client.public_repos(), ['repo1', 'repo2'])
+        mock_get_json.assert_called_once()
+        mock_url.assert_called_once()
 
 
 if __name__ == "__main__":
