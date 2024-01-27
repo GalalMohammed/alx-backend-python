@@ -6,8 +6,9 @@ This module defines unit test class for client.
 
 import unittest
 from unittest.mock import patch, MagicMock, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -55,10 +56,34 @@ class TestGithubOrgClient(unittest.TestCase):
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False)
     ])
-    def test_has_license(self, repo: dict, license_key: str, expected: bool) -> None:
+    def test_has_license(self, repo: dict, license_key: str,
+                         expected: bool) -> None:
         """Test has_license.
         """
-        self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
+        self.assertEqual(GithubOrgClient.has_license(repo, license_key),
+                         expected)
+
+
+@parameterized_class(('org_payload', 'repos_payload', 'expected_repos',
+                      'apache2_repos'), TEST_PAYLOAD)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration test for GithubOrgClient.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """Mock requests.get.
+        """
+        cls.get_patcher = patch('requests.get', 'json')
+        cls.get_patcher.side_effect = [cls.org_payload, cls.repos_payload,
+                                       cls.expected_repos, cls.apache2_repos]
+        cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(self):
+        """Stop patcher.
+        """
+        cls.get_patcher.stop()
 
 
 if __name__ == "__main__":
